@@ -443,7 +443,6 @@ if __name__ == "__main__":
     generate_interactive_dashboard(data_path)
 
     """REFERENCE
-    [1] The usage of API, Implementation of functions such as chart configuration and click event linkage:
+        The usage of API, Implementation of functions such as chart configuration and click event linkage:
         ECharts API and Chart Configuration Documentation https://echarts.apache.org/handbook
-    [2] The HTML page styling and layout of the background were created with help from Gemini.
     """
