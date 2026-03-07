@@ -1,0 +1,223 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Clinical Data Visualization Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<style>
+body { background-color: #ffffff; color: #1e293b; padding: 20px; font-family: 'Inter', sans-serif; }
+.chart-card { border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; padding: 16px; margin-bottom: 24px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.matrix-h { height: 400px; }
+.bottom-h { height: 400px; }
+</style>
+</head>
+<body>
+<header class="mb-8 border-b border-slate-200 pb-4">
+<h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Interactive Analysis: Respiratory TB vs. Comparative Diseases (1998-2023)</h1>
+<p class="text-slate-500 mt-2 text-sm tracking-widest font-medium">Course 2 of Research Method</p>
+</header>
+
+<div class="chart-card">
+<h2 class="text-lg font-bold text-slate-800 mb-4">Macro Trend Matrix <p class="text-slate-500 mt-2 text-sm tracking-widest font-medium">Within-disease Z-Score of Admission Intensity</p></h2>
+<div id="matrix-chart" class="matrix-h bg-white rounded-lg"></div>
+</div>
+
+<div class="flex flex-col lg:flex-row gap-6">
+<div class="lg:w-[40%] chart-card">
+<h2 class="text-lg font-bold text-slate-800 mb-4">Annual Disease Profile <p id="radar-subtitle" class="text-slate-600 mt-2 text-sm tracking-widest font-medium"></p></h2>
+<div id="fingerprint-radar-chart" class="bottom-h bg-white rounded-lg"></div>
+</div>
+<div class="lg:w-[60%] chart-card">
+<h2 class="text-lg font-bold text-slate-800 mb-4">Metric Evolution <p id="trend-subtitle" class="text-slate-600 mt-2 text-sm tracking-widest font-medium"></p></h2>
+<div id="trend-line-chart" class="bottom-h bg-white rounded-lg"></div>
+</div>
+</div>
+
+<script>
+const chartData = {"years": [1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023], "codeNames": ["Miliary TB", "Candidiasis", "Respiratory TB (Confirmed)", "TB of Nervous System", "Chronic Viral Hepatitis", "TB of Other Organs", "Acute Hepatitis A", "Acute Hepatitis B", "Respiratory TB (Unconfirmed)"], "heatmap": [[0, 0, -1.27], [0, 1, -1.19], [0, 2, -0.92], [0, 3, -0.4], [0, 4, -0.2], [0, 5, 0.1], [0, 6, 0.77], [0, 7, 1.04], [0, 8, 1.26], [1, 0, -1.56], [1, 1, -1.18], [1, 2, -1.16], [1, 3, -0.36], [1, 4, -0.03], [1, 5, 0.57], [1, 6, 0.92], [1, 7, 1.07], [1, 8, 1.15], [2, 0, -0.97], [2, 1, -1.19], [2, 2, -1.1], [2, 3, -1.1], [2, 4, 0.06], [2, 5, 0.0], [2, 6, 0.87], [2, 7, 0.64], [2, 8, 1.05], [3, 0, -1.12], [3, 1, -1.22], [3, 2, -0.93], [3, 3, -0.1], [3, 4, 0.32], [3, 5, 0.21], [3, 6, 0.9], [3, 7, 0.51], [3, 8, 0.99], [4, 0, -0.53], [4, 1, -1.21], [4, 2, -0.75], [4, 3, 0.26], [4, 4, 0.66], [4, 5, 0.34], [4, 6, 2.57], [4, 7, 1.04], [4, 8, 1.37], [5, 0, -0.07], [5, 1, -1.13], [5, 2, -0.45], [5, 3, 0.2], [5, 4, 1.12], [5, 5, 0.41], [5, 6, 1.06], [5, 7, 1.13], [5, 8, 0.99], [6, 0, -0.04], [6, 1, -1.1], [6, 2, -0.1], [6, 3, 0.39], [6, 4, 0.94], [6, 5, 0.38], [6, 6, 0.36], [6, 7, 0.91], [6, 8, 0.89], [7, 0, 0.47], [7, 1, -1.02], [7, 2, 0.38], [7, 3, 0.54], [7, 4, 0.86], [7, 5, 1.1], [7, 6, -0.52], [7, 7, 0.72], [7, 8, 1.12], [8, 0, 0.37], [8, 1, -0.81], [8, 2, 0.62], [8, 3, 0.67], [8, 4, 1.13], [8, 5, 1.02], [8, 6, -0.33], [8, 7, 0.77], [8, 8, 1.01], [9, 0, 0.74], [9, 1, -0.64], [9, 2, 2.0], [9, 3, 0.87], [9, 4, 1.34], [9, 5, 0.64], [9, 6, -0.77], [9, 7, 0.2], [9, 8, 0.47], [10, 0, 0.81], [10, 1, -0.39], [10, 2, 2.36], [10, 3, 1.23], [10, 4, 1.28], [10, 5, 0.77], [10, 6, -0.54], [10, 7, 0.77], [10, 8, 0.61], [11, 0, 0.27], [11, 1, -0.23], [11, 2, 1.15], [11, 3, 1.08], [11, 4, 1.46], [11, 5, 0.65], [11, 6, -1.04], [11, 7, 0.46], [11, 8, 0.36], [12, 0, 3.21], [12, 1, -0.09], [12, 2, 0.83], [12, 3, 1.02], [12, 4, 1.12], [12, 5, 1.96], [12, 6, -0.9], [12, 7, 0.35], [12, 8, 0.08], [13, 0, 1.67], [13, 1, -0.09], [13, 2, 1.59], [13, 3, 2.66], [13, 4, 0.45], [13, 5, 1.19], [13, 6, -1.23], [13, 7, 0.46], [13, 8, 0.01], [14, 0, 0.0], [14, 1, 0.1], [14, 2, 0.72], [14, 3, 0.67], [14, 4, 0.47], [14, 5, 1.3], [14, 6, -0.9], [14, 7, 0.33], [14, 8, 0.13], [15, 0, 0.2], [15, 1, 0.32], [15, 2, 0.37], [15, 3, 1.34], [15, 4, 0.22], [15, 5, 0.45], [15, 6, -1.07], [15, 7, -0.08], [15, 8, -0.14], [16, 0, -0.09], [16, 1, 0.61], [16, 2, 0.04], [16, 3, -0.38], [16, 4, -0.32], [16, 5, -0.25], [16, 6, -0.82], [16, 7, 0.19], [16, 8, -0.91], [17, 0, -0.26], [17, 1, 0.98], [17, 2, -0.22], [17, 3, -0.71], [17, 4, -0.58], [17, 5, -0.64], [17, 6, -0.9], [17, 7, 0.85], [17, 8, -0.65], [18, 0, 0.52], [18, 1, 1.07], [18, 2, 0.23], [18, 3, -0.51], [18, 4, -0.8], [18, 5, -0.52], [18, 6, -0.23], [18, 7, -0.77], [18, 8, -0.61], [19, 0, -0.22], [19, 1, 1.06], [19, 2, -0.99], [19, 3, -0.92], [19, 4, -1.18], [19, 5, -0.87], [19, 6, 1.36], [19, 7, -1.34], [19, 8, -0.83], [20, 0, -1.58], [20, 1, 1.39], [20, 2, -0.83], [20, 3, -1.03], [20, 4, -1.23], [20, 5, -1.43], [20, 6, 0.49], [20, 7, -1.3], [20, 8, -1.07], [21, 0, 0.4], [21, 1, 1.45], [21, 2, -0.65], [21, 3, -1.51], [21, 4, -1.36], [21, 5, -1.53], [21, 6, 0.08], [21, 7, -1.37], [21, 8, -1.28], [22, 0, -0.14], [22, 1, 0.21], [22, 2, -1.6], [22, 3, -1.51], [22, 4, -1.48], [22, 5, -1.56], [22, 6, -1.28], [22, 7, -1.74], [22, 8, -1.87], [23, 0, -0.34], [23, 1, 1.31], [23, 2, -0.59], [23, 3, -1.22], [23, 4, -1.44], [23, 5, -1.37], [23, 6, -0.94], [23, 7, -1.6], [23, 8, -1.56], [24, 0, -1.07], [24, 1, 1.38], [24, 2, -0.54], [24, 3, -0.35], [24, 4, -1.4], [24, 5, -1.58], [24, 6, 0.72], [24, 7, -1.63], [24, 8, -1.34], [25, 0, 0.62], [25, 1, 1.62], [25, 2, 0.52], [25, 3, -0.81], [25, 4, -1.4], [25, 5, -1.31], [25, 6, 1.36], [25, 7, -1.61], [25, 8, -1.21]], "radarData": [{"name": "Respiratory TB (Confirmed)", "year": 1998, "values": [-0.06, -0.92, 1.06, 1.6, 0.06]}, {"name": "Respiratory TB (Unconfirmed)", "year": 1998, "values": [0.72, 1.26, 2.75, -0.29, 1.18]}, {"name": "TB of Nervous System", "year": 1998, "values": [-0.86, -0.4, -0.05, -0.16, -0.04]}, {"name": "TB of Other Organs", "year": 1998, "values": [-1.56, 0.1, -0.46, 1.1, -0.61]}, {"name": "Miliary TB", "year": 1998, "values": [0.82, -1.27, -1.61, 0.74, -1.6]}, {"name": "Acute Hepatitis A", "year": 1998, "values": [0.82, 0.77, -0.34, -0.02, -0.85]}, {"name": "Acute Hepatitis B", "year": 1998, "values": [0.16, 1.04, -0.91, -0.06, -0.37]}, {"name": "Chronic Viral Hepatitis", "year": 1998, "values": [-0.25, -0.2, -1.94, 0.43, -0.39]}, {"name": "Candidiasis", "year": 1998, "values": [0.57, -1.19, -1.77, 1.25, -1.77]}, {"name": "Respiratory TB (Confirmed)", "year": 1999, "values": [0.59, -1.16, 1.53, -0.27, 0.28]}, {"name": "Respiratory TB (Unconfirmed)", "year": 1999, "values": [0.85, 1.15, 1.17, 1.83, 0.14]}, {"name": "TB of Nervous System", "year": 1999, "values": [-0.39, -0.36, -2.07, -0.16, -1.16]}, {"name": "TB of Other Organs", "year": 1999, "values": [-1.66, 0.57, -0.46, 0.39, -0.39]}, {"name": "Miliary TB", "year": 1999, "values": [-0.79, -1.56, -0.5, -0.73, -0.94]}, {"name": "Acute Hepatitis A", "year": 1999, "values": [0.25, 0.92, -2.24, -0.36, -1.31]}, {"name": "Acute Hepatitis B", "year": 1999, "values": [0.01, 1.07, -0.91, -1.1, -0.55]}, {"name": "Chronic Viral Hepatitis", "year": 1999, "values": [-0.38, -0.03, -1.94, 0.54, -0.79]}, {"name": "Candidiasis", "year": 1999, "values": [1.06, -1.18, -1.77, 1.56, -1.72]}, {"name": "Respiratory TB (Confirmed)", "year": 2000, "values": [0.3, -1.1, 1.06, 1.0, -0.35]}, {"name": "Respiratory TB (Unconfirmed)", "year": 2000, "values": [0.74, 1.05, 0.38, -0.63, -0.13]}, {"name": "TB of Nervous System", "year": 2000, "values": [1.11, -1.1, -2.41, -0.28, -0.95]}, {"name": "TB of Other Organs", "year": 2000, "values": [-0.33, 0.0, 0.04, 0.53, -0.1]}, {"name": "Miliary TB", "year": 2000, "values": [1.19, -0.97, 2.47, -0.85, 0.85]}, {"name": "Acute Hepatitis A", "year": 2000, "values": [0.81, 0.87, -1.16, 0.29, -0.97]}, {"name": "Acute Hepatitis B", "year": 2000, "values": [-0.03, 0.64, -0.91, -0.03, -0.89]}, {"name": "Chronic Viral Hepatitis", "year": 2000, "values": [-0.43, 0.06, -0.62, 1.05, -0.27]}, {"name": "Candidiasis", "year": 2000, "values": [0.45, -1.19, -1.59, 1.64, -1.29]}, {"name": "Respiratory TB (Confirmed)", "year": 2001, "values": [0.36, -0.93, 1.06, 1.75, 0.25]}, {"name": "Respiratory TB (Unconfirmed)", "year": 2001, "values": [0.89, 0.99, -0.41, -0.01, 0.13]}, {"name": "TB of Nervous System", "year": 2001, "values": [-0.39, -0.1, -1.4, -0.23, -0.58]}, {"name": "TB of Other Organs", "year": 2001, "values": [-0.75, 0.21, -0.96, 0.84, -0.78]}, {"name": "Miliary TB", "year": 2001, "values": [0.85, -1.12, 0.24, -0.5, -0.57]}, {"name": "Acute Hepatitis A", "year": 2001, "values": [1.14, 0.9, -1.7, -0.54, -1.06]}, {"name": "Acute Hepatitis B", "year": 2001, "values": [0.14, 0.51, -1.64, 0.36, -0.95]}, {"name": "Chronic Viral Hepatitis", "year": 2001, "values": [-0.41, 0.32, -1.28, 1.97, -0.75]}, {"name": "Candidiasis", "year": 2001, "values": [0.77, -1.22, -1.59, 1.3, -1.35]}, {"name": "Respiratory TB (Confirmed)", "year": 2002, "values": [0.72, -0.75, -0.34, 1.37, -0.47]}, {"name": "Respiratory TB (Unconfirmed)", "year": 2002, "values": [1.23, 1.37, -0.41, -0.01, -1.08]}, {"name": "TB of Nervous System", "year": 2002, "values": [0.31, 0.26, -0.72, -0.06, -0.97]}, {"name": "TB of Other Organs", "year": 2002, "values": [-0.34, 0.34, 0.04, 0.84, -0.13]}, {"name": "Miliary TB", "year": 2002, "values": [-0.4, -0.53, -1.24, -0.32, -1.34]}, {"name": "Acute Hepatitis A", "year": 2002, "values": [1.26, 2.57, -1.7, 1.53, -1.43]}, {"name": "Acute Hepatitis B", "year": 2002, "values": [0.11, 1.04, -1.64, 1.65, -0.89]}, {"name": "Chronic Viral Hepatitis", "year": 2002, "values": [-0.6, 0.66, -0.62, 2.05, -0.75]}, {"name": "Candidiasis", "year": 2002, "values": [1.24, -1.21, -1.4, 1.64, -1.09]}, {"name": "Respiratory TB (Confirmed)", "year": 2003, "values": [1.68, -0.45, 0.13, 2.12, -0.63]}, {"name": "Respiratory TB (Unconfirmed)", "year": 2003, "values": [1.2, 0.99, 0.38, 0.31, -1.1]}, {"name": "TB of Nervous System", "year": 2003, "values": [-0.47, 0.2, -0.72, -0.22, -0.75]}, {"name": "TB of Other Organs", "year": 2003, "values": [-0.36, 0.41, 0.55, 0.69, -0.23]}, {"name": "Miliary TB", "year": 2003, "values": [0.07, -0.07, -0.5, -0.41, -1.19]}, {"name": "Acute Hepatitis A", "year": 2003, "values": [1.02, 1.06, -0.61, -0.95, -0.97]}, {"name": "Acute Hepatitis B", "year": 2003, "values": [-0.83, 1.13, -0.55, 1.06, -0.34]}, {"name": "Chronic Viral Hepatitis", "year": 2003, "values": [-0.65, 1.12, -0.62, 1.66, -0.82]}, {"name": "Candidiasis", "year": 2003, "values": [1.66, -1.13, -0.84, 1.18, -1.33]}, {"name": "Respiratory TB (Confirmed)", "year": 2004, "values": [1.96, -0.1, -0.8, -0.86, -1.35]}, {"name": "Respiratory TB (Unconfirmed)", "year": 2004, "values": [1.24, 0.89, -1.2, -0.63, -1.74]}, {"name": "TB of Nervous System", "year": 2004, "values": [0.72, 0.39, -0.05, -0.26, -0.87]}, {"name": "TB of Other Organs", "year": 2004, "values": [0.24, 0.38, -0.96, 1.76, -0.72]}, {"name": "Miliary TB", "year": 2004, "values": [2.49, -0.04, -0.13, -0.94, -0.45]}, {"name": "Acute Hepatitis A", "year": 2004, "values": [0.87, 0.36, 0.2, 0.57, -0.99]}, {"name": "Acute Hepatitis B", "year": 2004, "values": [-0.44, 0.91, -0.19, 0.86, -0.38]}, {"name": "Chronic Viral Hepatitis", "year": 2004, "values": [-0.75, 0.94, -0.62, 0.74, -1.03]}, {"name": "Candidiasis", "year": 2004, "values": [1.86, -1.1, -0.84, 1.07, -1.02]}, {"name": "Respiratory TB (Confirmed)", "year": 2005, "values": [1.55, 0.38, -0.8, 0.25, -1.07]}, {"name": "Respiratory TB (Unconfirmed)", "year": 2005, "values": [1.24, 1.12, -0.41, -0.32, -0.75]}, {"name": "TB of Nervous System", "year": 2005, "values": [1.13, 0.54, -0.72, -0.23, -1.21]}, {"name": "TB of Other Organs", "year": 2005, "values": [0.22, 1.1, -0.96, 0.07, -0.8]}, {"name": "Miliary TB", "year": 2005, "values": [-0.64, 0.47, -0.5, -0.41, -0.04]}, {"name": "Acute Hepatitis A", "year": 2005, "values": [0.99, -0.52, 1.28, 1.8, 0.98]}, {"name": "Acute Hepatitis B", "year": 2005, "values": [-0.58, 0.72, -0.55, 0.96, -0.61]}, {"name": "Chronic Viral Hepatitis", "year": 2005, "values": [-0.69, 0.86, -0.62, 0.66, -0.92]}, {"name": "Candidiasis", "year": 2005, "values": [1.61, -1.02, -0.66, 0.84, -0.91]}, {"name": "Respiratory TB (Confirmed)", "year": 2006, "values": [0.84, 0.62, -0.34, -0.86, -0.66]}, {"name": "Respiratory TB (Unconfirmed)", "year": 2006, "values": [1.28, 1.01, 0.38, -0.94, -0.17]}, {"name": "TB of Nervous System", "year": 2006, "values": [-0.14, 0.67, -0.05, -0.07, -1.15]}, {"name": "TB of Other Organs", "year": 2006, "values": [-0.77, 1.02, -0.96, 2.84, -0.84]}, {"name": "Miliary TB", "year": 2006, "values": [0.32, 0.37, 0.61, -0.14, 0.21]}, {"name": "Acute Hepatitis A", "year": 2006, "values": [-0.05, -0.33, -0.61, 0.02, -0.55]}, {"name": "Acute Hepatitis B", "year": 2006, "values": [-0.45, 0.77, -0.55, 0.46, -0.61]}, {"name": "Chronic Viral Hepatitis", "year": 2006, "values": [-0.72, 1.13, 0.04, 0.5, -0.55]}, {"name": "Candidiasis", "year": 2006, "values": [0.88, -0.81, -0.66, 0.26, -0.94]}, {"name": "Respiratory TB (Confirmed)", "year": 2007, "values": [-1.77, 2.0, -1.74, -0.86, -2.03]}, {"name": "Respiratory TB (Unconfirmed)", "year": 2007, "values": [0.65, 0.47, -1.2, 3.42, -0.98]}, {"name": "TB of Nervous System", "year": 2007, "values": [0.28, 0.87, -0.05, -0.23, -0.12]}, {"name": "TB of Other Organs", "year": 2007, "values": [-0.11, 0.64, -0.46, -0.55, -0.83]}, {"name": "Miliary TB", "year": 2007, "values": [0.76, 0.74, -0.5, 1.11, -0.59]}, {"name": "Acute Hepatitis A", "year": 2007, "values": [0.3, -0.77, -0.07, -0.67, -0.04]}, {"name": "Acute Hepatitis B", "year": 2007, "values": [-0.9, 0.2, -0.19, -0.13, 0.05]}, {"name": "Chronic Viral Hepatitis", "year": 2007, "values": [-0.77, 1.34, 0.04, -0.04, -0.9]}, {"name": "Candidiasis", "year": 2007, "values": [0.8, -0.64, -0.47, -0.66, -0.53]}, {"name": "Respiratory TB (Confirmed)", "year": 2008, "values": [-2.06, 2.36, -3.13, -0.49, -1.9]}, {"name": "Respiratory TB (Unconfirmed)", "year": 2008, "values": [-0.02, 0.61, -1.2, -1.25, -0.66]}, {"name": "TB of Nervous System", "year": 2008, "values": [-1.19, 1.23, 0.29, -0.07, -0.48]}, {"name": "TB of Other Organs", "year": 2008, "values": [0.52, 0.77, -0.46, -0.7, -0.68]}, {"name": "Miliary TB", "year": 2008, "values": [0.62, 0.81, -0.5, -0.68, -0.82]}, {"name": "Acute Hepatitis A", "year": 2008, "values": [0.24, -0.54, -0.07, -0.05, 0.02]}, {"name": "Acute Hepatitis B", "year": 2008, "values": [-1.16, 0.77, -1.28, -0.63, -0.89]}, {"name": "Chronic Viral Hepatitis", "year": 2008, "values": [-0.79, 1.28, 0.04, -0.66, -0.6]}, {"name": "Candidiasis", "year": 2008, "values": [0.11, -0.39, -0.1, -1.01, 0.04]}, {"name": "Respiratory TB (Confirmed)", "year": 2009, "values": [-0.5, 1.15, -0.34, 0.25, 0.03]}, {"name": "Respiratory TB (Unconfirmed)", "year": 2009, "values": [-0.16, 0.36, -0.41, 0.93, -0.18]}, {"name": "TB of Nervous System", "year": 2009, "values": [0.44, 1.08, -0.05, -0.13, -0.96]}, {"name": "TB of Other Organs", "year": 2009, "values": [0.41, 0.65, 0.04, -0.55, -0.01]}, {"name": "Miliary TB", "year": 2009, "values": [0.44, 0.27, 0.61, -0.32, 0.75]}, {"name": "Acute Hepatitis A", "year": 2009, "values": [0.5, -1.04, 1.01, -1.16, 1.12]}, {"name": "Acute Hepatitis B", "year": 2009, "values": [-0.82, 0.46, -0.55, -0.73, -0.56]}, {"name": "Chronic Viral Hepatitis", "year": 2009, "values": [-0.83, 1.46, 0.04, -0.89, -0.58]}, {"name": "Candidiasis", "year": 2009, "values": [0.48, -0.23, 0.09, -0.66, 0.37]}, {"name": "Respiratory TB (Confirmed)", "year": 2010, "values": [0.2, 0.83, -0.34, -0.12, -0.21]}, {"name": "Respiratory TB (Unconfirmed)", "year": 2010, "values": [0.14, 0.08, -0.41, 0.31, -0.07]}, {"name": "TB of Nervous System", "year": 2010, "values": [0.32, 1.02, -0.72, -0.21, -0.15]}, {"name": "TB of Other Organs", "year": 2010, "values": [0.4, 1.96, -1.46, -0.24, -1.21]}, {"name": "Miliary TB", "year": 2010, "values": [-2.64, 3.21, -1.98, 0.85, -1.67]}, {"name": "Acute Hepatitis A", "year": 2010, "values": [0.39, -0.9, -0.61, 0.15, -0.6]}, {"name": "Acute Hepatitis B", "year": 2010, "values": [-1.22, 0.35, -0.55, 0.26, -0.68]}, {"name": "Chronic Viral Hepatitis", "year": 2010, "values": [-0.86, 1.12, -0.62, -0.89, -0.6]}, {"name": "Candidiasis", "year": 2010, "values": [0.09, -0.09, 0.27, -0.89, 0.51]}, {"name": "Respiratory TB (Confirmed)", "year": 2011, "values": [-0.64, 1.59, -0.8, -0.49, -0.57]}, {"name": "Respiratory TB (Unconfirmed)", "year": 2011, "values": [-0.15, 0.01, 0.38, -1.25, 0.29]}, {"name": "TB of Nervous System", "year": 2011, "values": [-2.69, 2.66, -0.05, -0.26, 0.21]}, {"name": "TB of Other Organs", "year": 2011, "values": [0.12, 1.19, -0.46, -0.39, -0.46]}, {"name": "Miliary TB", "year": 2011, "values": [-0.35, 1.67, -0.87, -0.32, -0.88]}, {"name": "Acute Hepatitis A", "year": 2011, "values": [-1.62, -1.23, -0.07, -0.54, -0.39]}, {"name": "Acute Hepatitis B", "year": 2011, "values": [-0.4, 0.46, -0.55, -0.23, -0.56]}, {"name": "Chronic Viral Hepatitis", "year": 2011, "values": [-0.72, 0.45, 0.04, -0.97, -0.22]}, {"name": "Candidiasis", "year": 2011, "values": [-0.61, -0.09, 0.65, -0.89, 0.93]}, {"name": "Respiratory TB (Confirmed)", "year": 2012, "values": [-0.48, 0.72, -0.34, -0.86, -0.31]}, {"name": "Respiratory TB (Unconfirmed)", "year": 2012, "values": [-0.61, 0.13, -1.99, -0.01, -0.66]}, {"name": "TB of Nervous System", "year": 2012, "values": [0.5, 0.67, -0.05, -0.23, -0.18]}, {"name": "TB of Other Organs", "year": 2012, "values": [-0.84, 1.3, -1.46, -0.55, -1.07]}, {"name": "Miliary TB", "year": 2012, "values": [-0.2, 0.0, 0.24, 0.67, 0.26]}, {"name": "Acute Hepatitis A", "year": 2012, "values": [-0.38, -0.9, 0.47, -0.33, -0.02]}, {"name": "Acute Hepatitis B", "year": 2012, "values": [-1.13, 0.33, 0.18, 0.07, -0.38]}, {"name": "Chronic Viral Hepatitis", "year": 2012, "values": [-0.5, 0.47, 0.04, -0.73, -0.23]}, {"name": "Candidiasis", "year": 2012, "values": [-0.61, 0.1, 0.83, -1.01, 1.2]}, {"name": "Respiratory TB (Confirmed)", "year": 2013, "values": [-0.89, 0.37, -0.34, -1.24, -0.42]}, {"name": "Respiratory TB (Unconfirmed)", "year": 2013, "values": [-0.76, -0.14, -1.2, -0.94, -0.65]}, {"name": "TB of Nervous System", "year": 2013, "values": [-2.27, 1.34, 0.29, -0.2, -0.21]}, {"name": "TB of Other Organs", "year": 2013, "values": [0.01, 0.45, 0.04, -0.86, -0.54]}, {"name": "Miliary TB", "year": 2013, "values": [-0.42, 0.2, 0.24, -0.59, 0.04]}, {"name": "Acute Hepatitis A", "year": 2013, "values": [0.08, -1.07, 0.47, 0.57, 0.69]}, {"name": "Acute Hepatitis B", "year": 2013, "values": [-0.77, -0.08, -0.19, 0.17, -0.29]}, {"name": "Chronic Viral Hepatitis", "year": 2013, "values": [-0.57, 0.22, 0.7, -1.04, 0.21]}, {"name": "Candidiasis", "year": 2013, "values": [-0.72, 0.32, 0.65, -1.01, 0.74]}, {"name": "Respiratory TB (Confirmed)", "year": 2014, "values": [-1.37, 0.04, 1.06, -1.98, 0.63]}, {"name": "Respiratory TB (Unconfirmed)", "year": 2014, "values": [-0.35, -0.91, -0.41, -0.63, 0.25]}, {"name": "TB of Nervous System", "year": 2014, "values": [0.8, -0.38, 0.29, -0.31, 1.1]}, {"name": "TB of Other Organs", "year": 2014, "values": [-0.73, -0.25, 0.04, -0.55, -0.63]}, {"name": "Miliary TB", "year": 2014, "values": [0.53, -0.09, 1.36, 3.8, 0.89]}, {"name": "Acute Hepatitis A", "year": 2014, "values": [0.52, -0.82, -0.07, 1.53, -0.27]}, {"name": "Acute Hepatitis B", "year": 2014, "values": [-0.94, 0.19, 0.54, -0.53, 0.15]}, {"name": "Chronic Viral Hepatitis", "year": 2014, "values": [-0.41, -0.32, 0.04, -0.42, -0.09]}, {"name": "Candidiasis", "year": 2014, "values": [-0.89, 0.61, 0.83, -1.01, 0.97]}, {"name": "Respiratory TB (Confirmed)", "year": 2015, "values": [0.58, -0.22, 0.41, -0.49, 0.35]}, {"name": "Respiratory TB (Unconfirmed)", "year": 2015, "values": [-2.34, -0.65, -0.13, -1.25, -1.0]}, {"name": "TB of Nervous System", "year": 2015, "values": [-0.3, -0.71, 1.38, -0.22, 0.71]}, {"name": "TB of Other Organs", "year": 2015, "values": [0.16, -0.64, 0.47, -0.55, 0.29]}, {"name": "Miliary TB", "year": 2015, "values": [0.21, -0.26, 1.32, -0.94, 1.93]}, {"name": "Acute Hepatitis A", "year": 2015, "values": [0.72, -0.9, 0.47, 0, 0.11]}, {"name": "Acute Hepatitis B", "year": 2015, "values": [-1.27, 0.85, 0.32, 2.35, -0.77]}, {"name": "Chronic Viral Hepatitis", "year": 2015, "values": [-0.3, -0.58, 0.12, 0.19, 0.2]}, {"name": "Candidiasis", "year": 2015, "values": [-0.73, 0.98, 0.77, -0.89, 0.88]}, {"name": "Respiratory TB (Confirmed)", "year": 2016, "values": [-1.48, 0.23, 0.27, -0.49, -0.31]}, {"name": "Respiratory TB (Unconfirmed)", "year": 2016, "values": [-2.01, -0.61, -0.34, 0.62, -0.51]}, {"name": "TB of Nervous System", "year": 2016, "values": [0.44, -0.51, 1.94, -0.27, 2.5]}, {"name": "TB of Other Organs", "year": 2016, "values": [-1.42, -0.52, -0.2, -1.93, 0.06]}, {"name": "Miliary TB", "year": 2016, "values": [-1.42, 0.52, 0.36, 0.22, 0.12]}, {"name": "Acute Hepatitis A", "year": 2016, "values": [0.59, -0.23, 0.79, 3.04, 0.17]}, {"name": "Acute Hepatitis B", "year": 2016, "values": [0.36, -0.77, 0.56, -1.12, 0.05]}, {"name": "Chronic Viral Hepatitis", "year": 2016, "values": [-0.13, -0.8, 0.15, -0.58, -0.23]}, {"name": "Candidiasis", "year": 2016, "values": [-1.12, 1.07, 0.82, -1.01, 0.84]}, {"name": "Respiratory TB (Confirmed)", "year": 2017, "values": [-0.01, -0.99, 1.58, 0.63, 2.26]}, {"name": "Respiratory TB (Unconfirmed)", "year": 2017, "values": [-1.51, -0.83, -0.07, 0.93, -0.31]}, {"name": "TB of Nervous System", "year": 2017, "values": [0.62, -0.92, 0.41, 4.99, -0.01]}, {"name": "TB of Other Organs", "year": 2017, "values": [-1.53, -0.87, 1.4, -0.55, 1.14]}, {"name": "Miliary TB", "year": 2017, "values": [-1.1, -0.22, 0.86, 1.47, 1.11]}, {"name": "Acute Hepatitis A", "year": 2017, "values": [-0.54, 1.36, 0.99, -0.88, -0.56]}, {"name": "Acute Hepatitis B", "year": 2017, "values": [0.95, -1.34, 0.95, -1.72, -0.05]}, {"name": "Chronic Viral Hepatitis", "year": 2017, "values": [0.41, -1.18, 0.31, -1.27, -0.28]}, {"name": "Candidiasis", "year": 2017, "values": [-1.1, 1.06, 0.95, -0.55, 0.9]}, {"name": "Respiratory TB (Confirmed)", "year": 2018, "values": [-0.48, -0.83, 0.74, 0.25, 1.0]}, {"name": "Respiratory TB (Unconfirmed)", "year": 2018, "values": [-0.99, -1.07, 0.23, 0.62, 0.48]}, {"name": "TB of Nervous System", "year": 2018, "values": [1.32, -1.03, 1.84, -0.08, 2.74]}, {"name": "TB of Other Organs", "year": 2018, "values": [0.37, -1.43, 2.64, 0.22, 2.05]}, {"name": "Miliary TB", "year": 2018, "values": [-0.07, -1.58, 1.48, 0.13, 2.02]}, {"name": "Acute Hepatitis A", "year": 2018, "values": [-1.83, 0.49, 0.54, -0.54, 0.93]}, {"name": "Acute Hepatitis B", "year": 2018, "values": [1.22, -1.3, 1.75, -0.92, 1.57]}, {"name": "Chronic Viral Hepatitis", "year": 2018, "values": [0.98, -1.23, 1.0, -1.2, 1.18]}, {"name": "Candidiasis", "year": 2018, "values": [-0.96, 1.39, 0.85, -1.01, 0.97]}, {"name": "Respiratory TB (Confirmed)", "year": 2019, "values": [0.04, -0.65, 0.54, -1.24, 0.91]}, {"name": "Respiratory TB (Unconfirmed)", "year": 2019, "values": [-0.53, -1.28, 0.41, -0.01, 1.1]}, {"name": "TB of Nervous System", "year": 2019, "values": [0.75, -1.51, 0.2, -0.28, 0.82]}, {"name": "TB of Other Organs", "year": 2019, "values": [1.63, -1.53, 2.19, -1.01, 1.91]}, {"name": "Miliary TB", "year": 2019, "values": [-1.27, 0.4, -0.44, -0.68, -0.73]}, {"name": "Acute Hepatitis A", "year": 2019, "values": [-0.83, 0.08, 1.25, -0.6, 1.32]}, {"name": "Acute Hepatitis B", "year": 2019, "values": [1.49, -1.37, 1.23, 0.66, 0.65]}, {"name": "Chronic Viral Hepatitis", "year": 2019, "values": [1.37, -1.36, 0.64, -1.12, 1.65]}, {"name": "Candidiasis", "year": 2019, "values": [-0.73, 1.45, 1.05, -0.89, 0.99]}, {"name": "Respiratory TB (Confirmed)", "year": 2020, "values": [1.1, -1.6, -0.15, 1.0, 1.69]}, {"name": "Respiratory TB (Unconfirmed)", "year": 2020, "values": [0.64, -1.87, 2.02, -0.01, 3.1]}, {"name": "TB of Nervous System", "year": 2020, "values": [1.09, -1.51, 1.19, -0.23, 0.21]}, {"name": "TB of Other Organs", "year": 2020, "values": [1.98, -1.56, 0.62, 0.07, 0.59]}, {"name": "Miliary TB", "year": 2020, "values": [0.84, -0.14, 0.8, 0.31, 0.83]}, {"name": "Acute Hepatitis A", "year": 2020, "values": [-1.84, -1.28, 2.17, -0.81, 2.96]}, {"name": "Acute Hepatitis B", "year": 2020, "values": [2.07, -1.74, 1.16, 1.55, 1.01]}, {"name": "Chronic Viral Hepatitis", "year": 2020, "values": [2.07, -1.48, 2.08, 1.2, 1.94]}, {"name": "Candidiasis", "year": 2020, "values": [-0.24, 0.21, 0.94, 1.07, 0.9]}, {"name": "Respiratory TB (Confirmed)", "year": 2021, "values": [0.06, -0.59, 0.14, 0.25, 0.52]}, {"name": "Respiratory TB (Unconfirmed)", "year": 2021, "values": [-0.21, -1.56, 0.99, -0.63, 1.27]}, {"name": "TB of Nervous System", "year": 2021, "values": [0.75, -1.22, 0.62, -0.09, 0.61]}, {"name": "TB of Other Organs", "year": 2021, "values": [1.49, -1.37, 1.0, -0.86, 2.06]}, {"name": "Miliary TB", "year": 2021, "values": [0.25, -0.34, -0.2, -0.05, 1.18]}, {"name": "Acute Hepatitis A", "year": 2021, "values": [-0.47, -0.94, 0.62, -0.88, 1.38]}, {"name": "Acute Hepatitis B", "year": 2021, "values": [1.67, -1.6, 1.06, -1.12, 1.14]}, {"name": "Chronic Viral Hepatitis", "year": 2021, "values": [2.18, -1.44, 0.51, 0.12, 0.62]}, {"name": "Candidiasis", "year": 2021, "values": [-1.54, 1.31, 0.81, -0.2, 0.29]}, {"name": "Respiratory TB (Confirmed)", "year": 2022, "values": [-0.39, -0.54, 0.06, 0.27, 1.36]}, {"name": "Respiratory TB (Unconfirmed)", "year": 2022, "values": [-0.46, -1.34, 0.57, -0.16, 0.96]}, {"name": "TB of Nervous System", "year": 2022, "values": [-0.94, -0.35, 0.74, -0.25, 0.67]}, {"name": "TB of Other Organs", "year": 2022, "values": [1.47, -1.58, 0.89, 1.07, 2.11]}, {"name": "Miliary TB", "year": 2022, "values": [-0.85, -1.07, -0.64, -0.59, 0.64]}, {"name": "Acute Hepatitis A", "year": 2022, "values": [-2.52, 0.72, -0.2, -0.57, 0.49]}, {"name": "Acute Hepatitis B", "year": 2022, "values": [1.15, -1.63, 1.68, -1.64, 3.19]}, {"name": "Chronic Viral Hepatitis", "year": 2022, "values": [1.96, -1.4, 0.3, -0.11, 1.12]}, {"name": "Candidiasis", "year": 2022, "values": [-1.33, 1.38, 1.0, -0.05, 0.44]}, {"name": "Respiratory TB (Confirmed)", "year": 2023, "values": [0.17, 0.52, -0.21, -0.49, 0.9]}, {"name": "Respiratory TB (Unconfirmed)", "year": 2023, "values": [-0.71, -1.21, 0.12, -0.01, 1.1]}, {"name": "TB of Nervous System", "year": 2023, "values": [-0.94, -0.81, -0.08, -0.27, 0.22]}, {"name": "TB of Other Organs", "year": 2023, "values": [1.36, -1.31, -0.71, -1.16, -0.19]}, {"name": "Miliary TB", "year": 2023, "values": [0.76, 0.62, -0.99, -0.85, 0.01]}, {"name": "Acute Hepatitis A", "year": 2023, "values": [-0.43, 1.36, -0.79, -0.6, -0.16]}, {"name": "Acute Hepatitis B", "year": 2023, "values": [1.6, -1.61, 1.74, -0.43, 1.98]}, {"name": "Chronic Viral Hepatitis", "year": 2023, "values": [1.79, -1.4, 2.79, -1.2, 3.07]}, {"name": "Candidiasis", "year": 2023, "values": [-1.01, 1.62, 1.18, -0.09, 0.98]}], "metrics": ["Urgency", "Intensity", "Age Profile", "Wait Time", "Elderly Share"], "distanceNames": ["Respiratory TB (Confirmed)", "Respiratory TB (Unconfirmed)", "TB of Other Organs", "Miliary TB", "Chronic Viral Hepatitis", "TB of Nervous System", "Candidiasis", "Acute Hepatitis B", "Acute Hepatitis A"], "distanceValues": [0.0, 2.257, 2.285, 2.355, 2.391, 2.392, 2.473, 2.587, 3.052], "distanceRadarData": [{"name": "Respiratory TB (Confirmed)", "values": [0.0, 0.0, 0.0, 0.0, 0.0]}, {"name": "Respiratory TB (Unconfirmed)", "values": [0.724, 1.108, 0.812, 1.055, 0.613]}, {"name": "TB of Other Organs", "values": [1.196, 0.805, 0.917, 0.813, 0.703]}, {"name": "Miliary TB", "values": [1.01, 0.557, 0.946, 1.072, 0.936]}, {"name": "TB of Nervous System", "values": [1.054, 0.543, 1.119, 0.937, 0.803]}, {"name": "Acute Hepatitis B", "values": [1.1, 1.035, 0.998, 1.119, 0.727]}, {"name": "Acute Hepatitis A", "values": [1.036, 1.513, 1.199, 1.215, 0.931]}, {"name": "Chronic Viral Hepatitis", "values": [1.167, 0.767, 1.117, 0.68, 0.59]}, {"name": "Candidiasis", "values": [0.697, 1.207, 1.13, 0.662, 0.871]}]};
+const charts = {};
+const SUB_THEME = ['#990000', '#d95f0e', '#fec44f', '#2b8cbe', '#78c679'];
+
+function initDashboard() {
+    charts.matrix = echarts.init(document.getElementById('matrix-chart'));
+    charts.matrix.setOption({
+        tooltip: {
+            position: 'top',
+            formatter: p => `Year: ${chartData.years[p.data[0]]}<br/>Disease: ${chartData.codeNames[p.data[1]]}<br/>Intensity (within-disease Z): ${Number(p.data[2]).toFixed(2)}`
+        },
+        grid: { top: '10%', bottom: '20%', left: 200, right: '80' },
+        xAxis: {
+            type: 'category',
+            data: chartData.years,
+            name: 'Year',
+            nameTextStyle: { fontFamily: 'Arial', fontSize: 12, color: '#000000' },
+            axisLine: { show: false },
+            axisTick: { show: false },
+            splitLine: { show: false },
+            axisLabel: { interval: 1, fontFamily: 'Arial', fontSize: 12, color: '#000000' }
+        },
+        yAxis: {
+            type: 'category',
+            data: chartData.codeNames,
+            name: 'Disease',
+            nameTextStyle: { fontFamily: 'Arial', fontSize: 12, color: '#000000' },
+            axisLine: { show: false },
+            axisTick: { show: false },
+            splitLine: { show: false },
+            axisLabel: { fontFamily: 'Arial', fontSize: 12, color: '#000000' }
+        },
+        visualMap: {
+            min: -2,
+            max: 2,
+            calculable: true,
+            orient: 'horizontal',
+            left: 'center',
+            bottom: '0%',
+            color: ['#fff7bc', '#fec44f', '#d95f0e', '#990000'],
+            text: ['High', 'Low'],
+            textStyle: { fontFamily: 'Arial', fontSize: 12, color: '#000000' },
+            formatter: function (value) { return Number(value).toFixed(2); }
+        },
+        series: [{
+            name: 'Intensity',
+            type: 'heatmap',
+            data: chartData.heatmap
+        }]
+    });
+
+    charts.trend = echarts.init(document.getElementById('trend-line-chart'));
+    charts.radar = echarts.init(document.getElementById('fingerprint-radar-chart'));
+
+    charts.matrix.on('click', function (params) {
+        updateTrend(chartData.codeNames[params.data[1]]);
+    });
+
+    const DEFAULT_DISEASE = 'Respiratory TB (Confirmed)';
+    const defaultName = chartData.codeNames.includes(DEFAULT_DISEASE)
+        ? DEFAULT_DISEASE
+        : chartData.codeNames[0];
+
+    updateTrend(defaultName);
+    initDistance();
+}
+
+function updateTrend(diseaseName) {
+    document.getElementById('trend-subtitle').innerText = "Evolution: " + diseaseName;
+    const rows = chartData.radarData.filter(d => d.name === diseaseName);
+
+    charts.trend.setOption({
+        backgroundColor: '#ffffff',
+        tooltip: { trigger: 'axis' },
+        grid: { left: 30, right: 70, top: 50, bottom: 70, containLabel: true },
+        legend: {
+            bottom: 5,
+            data: chartData.metrics,
+            textStyle: { fontFamily: 'Arial', fontSize: 12, color: '#000000' }
+        },
+        xAxis: {
+            type: 'category',
+            data: chartData.years,
+            boundaryGap: false,
+            axisLine: { show: true, onZero: false },
+            axisTick: { show: true, alignWithLabel: true },
+            name: 'year',
+            nameLocation: 'end',
+            nameTextStyle: { fontFamily: 'Arial', fontSize: 12, color: '#000000' },
+            axisLabel: { fontFamily: 'Arial', fontSize: 12, color: '#000000' }
+        },
+        yAxis: {
+            type: 'value',
+            name: 'Z-Score',
+            nameTextStyle: { fontFamily: 'Arial', fontSize: 12, color: '#000000' },
+            axisLine: { show: true },
+            axisTick: { show: true },
+            splitLine: { show: true },
+            axisLabel: { fontFamily: 'Arial', fontSize: 12, color: '#000000' }
+        },
+        series: chartData.metrics.map((m, i) => ({
+            name: m,
+            type: 'line',
+            smooth: 0.2,
+            lineStyle: { width: 1.5, color: SUB_THEME[i] },
+            itemStyle: { color: SUB_THEME[i] },
+            data: chartData.years.map(y => {
+                const d = rows.find(r => r.year === y);
+                return d ? d.values[i] : null;
+            })
+        }))
+    }, true);
+}
+
+function initDistance() {
+    document.getElementById('radar-subtitle').innerText =
+        "Metric-wise distance to Respiratory TB (Confirmed)";
+
+    const items = (chartData.distanceRadarData || []).filter(
+        d => d.name !== "Respiratory TB (Confirmed)"
+    );
+
+    let vmax = 0;
+    items.forEach(it => {
+        (it.values || []).forEach(v => {
+            if (v !== null && v !== undefined && !isNaN(v)) {
+                vmax = Math.max(vmax, v);
+            }
+        });
+    });
+    vmax = vmax === 0 ? 1 : +(vmax * 1.15).toFixed(3);
+
+    const seriesData = items.map((it, idx) => ({
+        name: it.name,
+        value: (it.values || []).map(v => (v === null || v === undefined) ? 0 : v),
+        lineStyle: { width: 1.2, color: SUB_THEME[idx % SUB_THEME.length], opacity: 0.85 },
+        itemStyle: { color: SUB_THEME[idx % SUB_THEME.length] },
+        areaStyle: { opacity: (it.name === "Respiratory TB (Confirmed)") ? 0.08 : 0.03 }
+    }));
+
+    charts.radar.setOption({
+        backgroundColor: '#ffffff',
+        tooltip: {
+            trigger: 'item',
+            formatter: (p) => {
+                const arr = p.value || [];
+                const lines = chartData.metrics.map((m, i) => {
+                    const v = arr[i];
+                    return `${m}: ${Number(v).toFixed(3)}`;
+                });
+                return `${p.name}<br/>` + lines.join('<br/>');
+            }
+        },
+        legend: {
+            type: 'plain',
+            left: 'center',
+            bottom: 0,
+            width: '90%',
+            itemGap: 14,
+            itemWidth: 10,
+            itemHeight: 10,
+            data: items.map(d => d.name),
+            textStyle: { fontFamily: 'Arial', fontSize: 12, color: '#000000' }
+        },
+        radar: {
+            center: ['50%', '42%'],
+            indicator: chartData.metrics.map(m => ({ name: m, max: vmax, min: 0 })),
+            radius: '58%',
+            name: { textStyle: { fontFamily: 'Arial', fontSize: 12, color: '#000000' } },
+            splitLine: { show: true },
+            splitArea: { show: true }
+        },
+        series: [{
+            type: 'radar',
+            data: seriesData
+        }]
+    }, true);
+}
+
+initDashboard();
+window.onresize = () => Object.values(charts).forEach(c => c.resize());
+</script>
+</body>
+</html>
+    
