@@ -283,7 +283,7 @@ function initDashboard() {{
             orient: 'horizontal',
             left: 'center',
             bottom: '0%',
-            color: ['#fff7bc', '#fec44f', '#d95f0e', '#990000'],
+            color: ['#990000', '#d95f0e', '#fec44f', '#fff7bc'],
             text: ['High', 'Low'],
             textStyle: {{ fontFamily: 'Arial', fontSize: 12, color: '#000000' }},
             formatter: function (value) {{ return Number(value).toFixed(2); }}
