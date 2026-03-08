@@ -442,7 +442,7 @@ if __name__ == "__main__":
     data_path = 'data.csv'
     generate_interactive_dashboard(data_path)
 
-        """REFERENCE
+    """REFERENCE
     [1] Apache ECharts: Documentation and chart configuration handbook.
         Available at: https://echarts.apache.org/en/option.html
     [2] Apache ECharts: Examples gallery (heatmap, radar, line charts).
@@ -456,4 +456,5 @@ if __name__ == "__main__":
     [6] pandas documentation： pandas.to_numeric.
         Available at: https://pandas.pydata.org/docs/reference/api/pandas.to_numeric.html
     """
+
 
