@@ -442,7 +442,18 @@ if __name__ == "__main__":
     data_path = 'data.csv'
     generate_interactive_dashboard(data_path)
 
-    """REFERENCE
-        The usage of API, Implementation of functions such as chart configuration and click event linkage:
-        ECharts API and Chart Configuration Documentation https://echarts.apache.org/handbook
+        """REFERENCE
+    [1] Apache ECharts: Documentation and chart configuration handbook.
+        Available at: https://echarts.apache.org/en/option.html
+    [2] Apache ECharts: Examples gallery (heatmap, radar, line charts).
+        Available at: https://echarts.apache.org/examples/en/index.html
+    [3] Apache ECharts Handbook： Event and Action.
+        Available at: https://apache.github.io/echarts-handbook/en/concepts/event/
+    [4] Apache ECharts Handbook： Chart Container and Size.
+        Available at: https://apache.github.io/echarts-handbook/en/concepts/chart-size/
+    [5] pandas documentation： GroupBy: split-apply-combine.
+        Available at: https://pandas.pydata.org/docs/user_guide/groupby.html
+    [6] pandas documentation： pandas.to_numeric.
+        Available at: https://pandas.pydata.org/docs/reference/api/pandas.to_numeric.html
     """
+
